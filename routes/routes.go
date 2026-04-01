@@ -25,6 +25,17 @@ func SetupRoutes() *gin.Engine {
 	{
 		api.GET("/me", handlers.GetMe)
 
+		api.GET("/transactions", handlers.GetTransactions)
+		api.GET("/transactions/:id", handlers.GetTransactionByID)
+
+		adminTransactions := api.Group("/transactions")
+		adminTransactions.Use(middleware.RequiredRoles("admin"))
+		{
+			adminTransactions.POST("/", handlers.CreateTransaction)
+			adminTransactions.PUT("/transactions/:id", handlers.UpdateTransaction)
+			adminTransactions.DELETE("/transactions/:id", handlers.DeleteTransaction)
+		}
+
 		users := api.Group("/users")
 		users.Use(middleware.RequiredRoles("admin"))
 		{

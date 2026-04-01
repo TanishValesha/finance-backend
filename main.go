@@ -17,7 +17,7 @@ func main() {
 
 	config.ConnectDB()
 
-	// config.DB.AutoMigrate(&models.User{})
+	// config.DB.AutoMigrate(&models.User{}, &models.Transaction{})
 
 	r := routes.SetupRoutes()
 

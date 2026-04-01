@@ -1,6 +1,9 @@
 package services
 
-import "finance-backend/config"
+import (
+	"finance-backend/config"
+	"time"
+)
 
 type SummaryResult struct {
 	TotalIncome   float64 `json:"total_income"`
@@ -11,6 +14,15 @@ type SummaryResult struct {
 type CategoryTotal struct {
 	Category string  `json:"category"`
 	Total    float64 `json:"total"`
+}
+
+type RecentTransaction struct {
+	ID       uint      `json:"id"`
+	Amount   float64   `json:"amount"`
+	Type     string    `json:"type"`
+	Category string    `json:"category"`
+	Date     time.Time `json:"date"`
+	Notes    string    `json:"notes"`
 }
 
 func GetSummary() (SummaryResult, error) {
@@ -33,4 +45,13 @@ func GetCategoryTotals() ([]CategoryTotal, error) {
 	config.DB.Raw(`SELECT category, COALESCE(SUM(amount), 0) AS total FROM transactions WHERE deleted_at IS NULL GROUP BY category ORDER BY total DESC`).Scan(&results)
 
 	return results, nil
+}
+
+func GetRecentTransactions(limit int) ([]RecentTransaction, error) {
+	var results []RecentTransaction
+
+	config.DB.Raw(`SELECT id, amount, type, category, date, notes FROM transactions WHERE deleted_at IS NULL ORDER BY created_at DESC LIMIT ?`, limit).Scan(&results)
+
+	return results, nil
+
 }

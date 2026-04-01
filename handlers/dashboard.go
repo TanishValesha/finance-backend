@@ -27,3 +27,13 @@ func GetCategoryBreakdown(c *gin.Context) {
 
 	utils.Success(c, http.StatusOK, "Category breakdown fetched", breakdown)
 }
+
+func GetRecentTransactions(c *gin.Context) {
+	transactions, err := services.GetRecentTransactions(4)
+	if err != nil {
+		utils.Error(c, 500, "Failed to fetch recent transactions")
+		return
+	}
+
+	utils.Success(c, http.StatusOK, "Recent transactions fetched", transactions)
+}

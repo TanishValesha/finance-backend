@@ -24,6 +24,13 @@ func SetupRoutes() *gin.Engine {
 	api.Use(middleware.AuthMiddleware())
 	{
 		api.GET("/me", handlers.GetMe)
+
+		users := api.Group("/users")
+		users.Use(middleware.RequiredRoles("admin"))
+		{
+			users.GET("/", handlers.GetAllUsers)
+			users.PATCH("/:id/role", handlers.UpdateUserRole)
+		}
 	}
 
 	return r

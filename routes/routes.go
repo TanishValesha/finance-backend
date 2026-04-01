@@ -2,6 +2,7 @@ package routes
 
 import (
 	"finance-backend/handlers"
+	"finance-backend/middleware"
 
 	"github.com/gin-gonic/gin"
 )
@@ -17,6 +18,12 @@ func SetupRoutes() *gin.Engine {
 	{
 		auth.POST("/register", handlers.Register)
 		auth.POST("/login", handlers.Login)
+	}
+
+	api := r.Group("/api")
+	api.Use(middleware.AuthMiddleware())
+	{
+		api.GET("/me", handlers.GetMe)
 	}
 
 	return r

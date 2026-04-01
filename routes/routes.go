@@ -36,6 +36,13 @@ func SetupRoutes() *gin.Engine {
 			adminTransactions.DELETE("/transactions/:id", handlers.DeleteTransaction)
 		}
 
+		dashboard := api.Group("/dashboard")
+		dashboard.Use(middleware.RequiredRoles("admin", "analyst"))
+		{
+			dashboard.GET("/summary", handlers.GetSummary)
+			dashboard.GET("/category-breakdown", handlers.GetCategoryBreakdown)
+		}
+
 		users := api.Group("/users")
 		users.Use(middleware.RequiredRoles("admin"))
 		{

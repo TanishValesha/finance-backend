@@ -2,7 +2,7 @@ package main
 
 import (
 	"finance-backend/config"
-	"finance-backend/models"
+	"finance-backend/routes"
 	"log"
 	"os"
 
@@ -17,7 +17,9 @@ func main() {
 
 	config.ConnectDB()
 
-	config.DB.AutoMigrate(&models.User{})
+	// config.DB.AutoMigrate(&models.User{})
+
+	r := routes.SetupRoutes()
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -25,5 +27,7 @@ func main() {
 	}
 
 	log.Printf("Server running on port %s", port)
+
+	r.Run(":" + port)
 
 }

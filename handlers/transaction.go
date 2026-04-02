@@ -90,7 +90,30 @@ func CreateTransaction(c *gin.Context) {
 func GetTransactions(c *gin.Context) {
 	var transactions []models.Transaction
 
-	if err := config.DB.Order("date desc").Find(&transactions).Error; err != nil {
+	typeOfTransaction := c.Query("type")
+	category := c.Query("category")
+
+	query := config.DB.Model(&models.Transaction{})
+
+	// Optional Filters
+
+	if typeOfTransaction != "" {
+		if !validateTransactionType(typeOfTransaction) {
+			utils.Error(c, http.StatusBadRequest, "Type must be income or expense")
+			return
+		}
+		query = query.Where("type = ?", typeOfTransaction)
+	}
+
+	if category != "" {
+		if !validateTransactionCategory(category) {
+			utils.Error(c, http.StatusBadRequest, "Invalid category")
+			return
+		}
+		query = query.Where("category = ?", category)
+	}
+
+	if err := query.Order("date desc").Find(&transactions).Error; err != nil {
 		utils.Error(c, http.StatusInternalServerError, "Failed to fetch transactions")
 		return
 	}

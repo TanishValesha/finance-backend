@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"finance-backend/config"
+	"finance-backend/models"
 	"finance-backend/services"
 	"finance-backend/utils"
 	"net/http"
@@ -37,6 +39,19 @@ func AuthMiddleware() gin.HandlerFunc {
 
 		if err != nil || !token.Valid {
 			utils.Error(c, http.StatusUnauthorized, "Invalid or expired token")
+			c.Abort()
+			return
+		}
+
+		var user models.User
+		if err := config.DB.First(&user, claims.UserID).Error; err != nil {
+			utils.Error(c, http.StatusUnauthorized, "User no longer exists")
+			c.Abort()
+			return
+		}
+
+		if !user.IsActive {
+			utils.Error(c, http.StatusForbidden, "Your account has been deactivated")
 			c.Abort()
 			return
 		}

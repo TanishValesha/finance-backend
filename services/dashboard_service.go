@@ -25,6 +25,12 @@ type RecentTransaction struct {
 	Notes    string    `json:"notes"`
 }
 
+type MonthlyTrend struct {
+	Month   string  `json:"month"`
+	Income  float64 `json:"income"`
+	Expense float64 `json:"expense"`
+}
+
 func GetSummary() (SummaryResult, error) {
 	var result SummaryResult
 
@@ -47,6 +53,25 @@ func GetCategoryTotals() ([]CategoryTotal, error) {
 	var results []CategoryTotal
 
 	if err := config.DB.Raw(`SELECT category, COALESCE(SUM(amount), 0) AS total FROM transactions WHERE deleted_at IS NULL GROUP BY category ORDER BY total DESC`).Scan(&results).Error; err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}
+
+func GetMonthlyTrends() ([]MonthlyTrend, error) {
+	var results []MonthlyTrend
+
+	if err := config.DB.Raw(`
+		SELECT
+			TO_CHAR(DATE_TRUNC('month', date), 'YYYY-MM') as month,
+			COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END), 0) as income,
+			COALESCE(SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END), 0) as expense
+		FROM transactions
+		WHERE deleted_at IS NULL
+		GROUP BY DATE_TRUNC('month', date)
+		ORDER BY DATE_TRUNC('month', date) ASC
+	`).Scan(&results).Error; err != nil {
 		return nil, err
 	}
 

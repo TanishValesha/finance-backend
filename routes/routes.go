@@ -41,6 +41,7 @@ func SetupRoutes() *gin.Engine {
 		{
 			dashboard.GET("/summary", handlers.GetSummary)
 			dashboard.GET("/category-breakdown", handlers.GetCategoryBreakdown)
+			dashboard.GET("/trends", handlers.GetMonthlyTrends)
 			dashboard.GET("/recent-transactions", handlers.GetRecentTransactions)
 		}
 

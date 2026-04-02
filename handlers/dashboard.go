@@ -28,6 +28,16 @@ func GetCategoryBreakdown(c *gin.Context) {
 	utils.Success(c, http.StatusOK, "Category breakdown fetched", breakdown)
 }
 
+func GetMonthlyTrends(c *gin.Context) {
+	trends, err := services.GetMonthlyTrends()
+	if err != nil {
+		utils.Error(c, http.StatusInternalServerError, "Failed to fetch monthly trends")
+		return
+	}
+
+	utils.Success(c, http.StatusOK, "Monthly trends fetched", trends)
+}
+
 func GetRecentTransactions(c *gin.Context) {
 	transactions, err := services.GetRecentTransactions(4)
 	if err != nil {

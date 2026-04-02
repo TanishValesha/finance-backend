@@ -29,10 +29,14 @@ func GetSummary() (SummaryResult, error) {
 	var result SummaryResult
 
 	// Calculate total income
-	config.DB.Raw(`SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE type = 'income' AND deleted_at IS NULL`).Scan(&result.TotalIncome)
+	if err := config.DB.Raw(`SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE type = 'income' AND deleted_at IS NULL`).Scan(&result.TotalIncome).Error; err != nil {
+		return result, err
+	}
 
 	// Calculate total expenses
-	config.DB.Raw(`SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE type = 'expense' AND deleted_at IS NULL`).Scan(&result.TotalExpenses)
+	if err := config.DB.Raw(`SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE type = 'expense' AND deleted_at IS NULL`).Scan(&result.TotalExpenses).Error; err != nil {
+		return result, err
+	}
 
 	result.NetBalance = result.TotalIncome - result.TotalExpenses
 
@@ -42,7 +46,9 @@ func GetSummary() (SummaryResult, error) {
 func GetCategoryTotals() ([]CategoryTotal, error) {
 	var results []CategoryTotal
 
-	config.DB.Raw(`SELECT category, COALESCE(SUM(amount), 0) AS total FROM transactions WHERE deleted_at IS NULL GROUP BY category ORDER BY total DESC`).Scan(&results)
+	if err := config.DB.Raw(`SELECT category, COALESCE(SUM(amount), 0) AS total FROM transactions WHERE deleted_at IS NULL GROUP BY category ORDER BY total DESC`).Scan(&results).Error; err != nil {
+		return nil, err
+	}
 
 	return results, nil
 }
@@ -50,7 +56,9 @@ func GetCategoryTotals() ([]CategoryTotal, error) {
 func GetRecentTransactions(limit int) ([]RecentTransaction, error) {
 	var results []RecentTransaction
 
-	config.DB.Raw(`SELECT id, amount, type, category, date, notes FROM transactions WHERE deleted_at IS NULL ORDER BY created_at DESC LIMIT ?`, limit).Scan(&results)
+	if err := config.DB.Raw(`SELECT id, amount, type, category, date, notes FROM transactions WHERE deleted_at IS NULL ORDER BY created_at DESC LIMIT ?`, limit).Scan(&results).Error; err != nil {
+		return nil, err
+	}
 
 	return results, nil
 

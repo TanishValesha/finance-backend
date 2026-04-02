@@ -5,6 +5,7 @@ import (
 	"finance-backend/models"
 	"finance-backend/utils"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -92,6 +93,10 @@ func GetTransactions(c *gin.Context) {
 
 	typeOfTransaction := c.Query("type")
 	category := c.Query("category")
+	from := c.Query("from")
+	to := c.Query("to")
+	p := c.Query("page")
+	l := c.Query("limit")
 
 	query := config.DB.Model(&models.Transaction{})
 
@@ -113,12 +118,75 @@ func GetTransactions(c *gin.Context) {
 		query = query.Where("category = ?", category)
 	}
 
-	if err := query.Order("date desc").Find(&transactions).Error; err != nil {
+	if from != "" {
+		parsedFrom, err := time.Parse("2006-01-02", from)
+		if err != nil {
+			utils.Error(c, http.StatusBadRequest, "Invalid from date format. Use YYYY-MM-DD")
+			return
+		}
+		query = query.Where("date >= ?", parsedFrom)
+	}
+
+	if to != "" {
+		parsedTo, err := time.Parse("2006-01-02", to)
+		if err != nil {
+			utils.Error(c, http.StatusBadRequest, "Invalid to date format. Use YYYY-MM-DD")
+			return
+		}
+		query = query.Where("date <= ?", parsedTo)
+	}
+
+	// Pagination
+
+	page := 1
+	limit := 10
+
+	if p != "" {
+		parsedPage, err := strconv.Atoi(p)
+		if err != nil {
+			utils.Error(c, http.StatusBadRequest, "Invalid page format")
+			return
+		}
+		if parsedPage < 1 {
+			utils.Error(c, http.StatusBadRequest, "Page must be greater than 0")
+			return
+		}
+		page = parsedPage
+	}
+
+	if l != "" {
+		parsedLimit, err := strconv.Atoi(l)
+		if err != nil {
+			utils.Error(c, http.StatusBadRequest, "Invalid limit format")
+			return
+		}
+		if parsedLimit < 1 {
+			utils.Error(c, http.StatusBadRequest, "Limit must be greater than 0")
+			return
+		}
+		limit = parsedLimit
+	}
+
+	offset := (page - 1) * limit
+
+	var total int64
+	if err := query.Count(&total).Error; err != nil {
+		utils.Error(c, http.StatusInternalServerError, "Failed to count transactions")
+		return
+	}
+
+	if err := query.Order("date desc").Offset(offset).Limit(limit).Find(&transactions).Error; err != nil {
 		utils.Error(c, http.StatusInternalServerError, "Failed to fetch transactions")
 		return
 	}
 
-	utils.Success(c, http.StatusOK, "Transactions fetched", transactions)
+	utils.Success(c, http.StatusOK, "Transactions fetched", gin.H{
+		"transactions": transactions,
+		"total":        total,
+		"page":         page,
+		"limit":        limit,
+		"total_pages":  (int(total) + limit - 1) / limit,
+	})
 }
 
 func GetTransactionByID(c *gin.Context) {

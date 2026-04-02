@@ -64,3 +64,26 @@ func UpdateUserRole(c *gin.Context) {
 	config.DB.Model(&user).Update("role", input.Role)
 	utils.Success(c, http.StatusOK, "Role updated successfully", nil)
 }
+
+type UpdateStatusInput struct {
+	IsActive bool `json:"is_active"`
+}
+
+func UpdateUserStatus(c *gin.Context) {
+	id := c.Param("id")
+	var input UpdateStatusInput
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		utils.Error(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	var user models.User
+	if err := config.DB.First(&user, id).Error; err != nil {
+		utils.Error(c, http.StatusNotFound, "User not found")
+		return
+	}
+
+	config.DB.Model(&user).Update("is_active", input.IsActive)
+	utils.Success(c, http.StatusOK, "Status updated successfully", nil)
+}

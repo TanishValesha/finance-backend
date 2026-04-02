@@ -49,6 +49,7 @@ func SetupRoutes() *gin.Engine {
 		{
 			users.GET("/", handlers.GetAllUsers)
 			users.PATCH("/:id/role", handlers.UpdateUserRole)
+			users.PATCH("/:id/status", handlers.UpdateUserStatus)
 		}
 	}
 

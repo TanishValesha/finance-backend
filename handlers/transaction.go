@@ -89,6 +89,8 @@ func CreateTransaction(c *gin.Context) {
 }
 
 func GetTransactions(c *gin.Context) {
+	userID, _ := c.Get("userID")
+	userRole, _ := c.Get("userRole")
 	var transactions []models.Transaction
 
 	typeOfTransaction := c.Query("type")
@@ -173,6 +175,10 @@ func GetTransactions(c *gin.Context) {
 	if err := query.Count(&total).Error; err != nil {
 		utils.Error(c, http.StatusInternalServerError, "Failed to count transactions")
 		return
+	}
+
+	if userRole.(string) != "admin" {
+		query = query.Where("created_by_id = ?", userID)
 	}
 
 	if err := query.Order("date desc").Offset(offset).Limit(limit).Find(&transactions).Error; err != nil {

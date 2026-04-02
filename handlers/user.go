@@ -5,6 +5,7 @@ import (
 	"finance-backend/models"
 	"finance-backend/utils"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -71,7 +72,20 @@ type UpdateStatusInput struct {
 
 func UpdateUserStatus(c *gin.Context) {
 	id := c.Param("id")
+	userID, _ := c.Get("userID")
+
 	var input UpdateStatusInput
+
+	paramID, err := strconv.ParseUint(id, 10, 0)
+	if err != nil {
+		utils.Error(c, http.StatusBadRequest, "Invalid user ID")
+		return
+	}
+
+	if uint(paramID) == userID.(uint) {
+		utils.Error(c, http.StatusForbidden, "You cannot change your own account status")
+		return
+	}
 
 	if err := c.ShouldBindJSON(&input); err != nil {
 		utils.Error(c, http.StatusBadRequest, err.Error())

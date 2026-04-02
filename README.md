@@ -185,7 +185,7 @@ GET /api/transactions?type=expense&category=food&page=2&limit=5
 | ---------------------- | ------ | ------- | ----- |
 | Login / Register       | ✓      | ✓       | ✓     |
 | View own transactions  | ✓      | ✓       | ✓     |
-| View all transactions  | ✗      | ✗       | ✓     |
+| View all transactions  | ✗      | ✓       | ✓     |
 | View dashboard summary | ✗      | ✓       | ✓     |
 | Create transactions    | ✗      | ✗       | ✓     |
 | Update transactions    | ✗      | ✗       | ✓     |
@@ -203,7 +203,7 @@ JWT is used for stateless authentication. Tokens expire after 24 hours. Every pr
 Transactions are never hard deleted. GORM's `DeletedAt` field is used to mark records as deleted while keeping them in the database for audit purposes. All queries automatically exclude soft-deleted records.
 
 **Ownership**
-Non-admin users (viewer, analyst) can only view transactions they created. Admins can view and manage all transactions.
+Viewers can only view transactions they created. Analyst can view all the transactions and the aggregation routes. Admins can view and manage all transactions, users and can also view the aggregation routes.
 
 **Role Enforcement**
 Access control is applied at the middleware level using route groups — not inside individual handlers. This keeps handlers clean and makes permissions easy to audit in one place (`routes/routes.go`).

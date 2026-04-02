@@ -177,7 +177,7 @@ func GetTransactions(c *gin.Context) {
 		return
 	}
 
-	if userRole.(string) != "admin" {
+	if userRole.(string) == "viewer" {
 		query = query.Where("created_by_id = ?", userID)
 	}
 
@@ -197,10 +197,17 @@ func GetTransactions(c *gin.Context) {
 
 func GetTransactionByID(c *gin.Context) {
 	id := c.Param("id")
+	userID, _ := c.Get("userID")
+	userRole, _ := c.Get("userRole")
 	var transaction models.Transaction
 
 	if err := config.DB.First(&transaction, id).Error; err != nil {
 		utils.Error(c, http.StatusNotFound, "Transaction not found")
+		return
+	}
+
+	if userRole.(string) == "viewer" && transaction.CreatedByID != userID.(uint) {
+		utils.Error(c, http.StatusForbidden, "You do not have permission to view this transaction")
 		return
 	}
 

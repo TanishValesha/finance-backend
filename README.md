@@ -2,6 +2,10 @@
 
 A RESTful backend API for a finance dashboard system built with **Go**, **Gin**, **PostgreSQL**, and **GORM**. The system supports user role management, financial record keeping, dashboard analytics, and role-based access control.
 
+### **Live Link** - https://finance-backend-nccg.onrender.com
+
+### **API Documentation Link** - https://www.postman.com/aviation-explorer-43162805/workspace/finance-backend/collection/32893876-6fce2e75-f005-4df8-a220-2037c93def0b?action=share&creator=32893876
+
 ---
 
 ## Tech Stack

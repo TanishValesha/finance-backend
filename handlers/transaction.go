@@ -17,6 +17,7 @@ type CreateTransactionInput struct {
 	Category string  `json:"category" binding:"required"`
 	Date     string  `json:"date" binding:"required"` // format: "2006-01-02"
 	Notes    string  `json:"notes"`
+	OwnedBy  uint    `json:"owned_by" binding:"required"`
 }
 
 type UpdateTransactionInput struct {
@@ -68,7 +69,11 @@ func CreateTransaction(c *gin.Context) {
 		return
 	}
 
-	userID, _ := c.Get("userID")
+	var user models.User
+	if err := config.DB.First(&user, uint(input.OwnedBy)).Error; err != nil {
+		utils.Error(c, http.StatusBadRequest, "User not found")
+		return
+	}
 
 	transaction := models.Transaction{
 		Amount:      input.Amount,
@@ -76,7 +81,7 @@ func CreateTransaction(c *gin.Context) {
 		Category:    models.TransactionCategory(input.Category),
 		Date:        parsedDate,
 		Notes:       input.Notes,
-		CreatedByID: userID.(uint),
+		CreatedByID: input.OwnedBy,
 	}
 
 	if err := config.DB.Create(&transaction).Error; err != nil {

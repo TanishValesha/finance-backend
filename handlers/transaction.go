@@ -100,6 +100,7 @@ func GetTransactions(c *gin.Context) {
 
 	typeOfTransaction := c.Query("type")
 	category := c.Query("category")
+	owner := c.Query("owner")
 	from := c.Query("from")
 	to := c.Query("to")
 	p := c.Query("page")
@@ -123,6 +124,15 @@ func GetTransactions(c *gin.Context) {
 			return
 		}
 		query = query.Where("category = ?", category)
+	}
+
+	if owner != "" {
+		ownerID, err := strconv.ParseUint(owner, 10, 0)
+		if err != nil {
+			utils.Error(c, http.StatusBadRequest, "Invalid owner format")
+			return
+		}
+		query = query.Where("created_by_id = ?", uint(ownerID))
 	}
 
 	if from != "" {
